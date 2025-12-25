@@ -1,6 +1,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -10,10 +11,20 @@ export default {
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: '[name].[contenthash].js',
-    assetModuleFilename: 'assets/[hash][ext][query]',
+    assetModuleFilename: 'assets/[name][ext]',
     clean: true,
   },
-  plugins: [ new HtmlWebpackPlugin({ template: path.resolve(__dirname, 'src', 'index.html') }), ],
+  plugins: [
+    new HtmlWebpackPlugin({ template: path.resolve(__dirname, 'src', 'index.html'), }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'src', 'assets'),
+          to: path.resolve(__dirname, 'build', 'assets'),
+        },
+      ],
+    }),
+  ],
   module: {
     rules: [
       {
@@ -40,6 +51,10 @@ export default {
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: 'asset/resource',
+      },
+      {
+        test: /\.(pdf)$/i,
         type: 'asset/resource',
       },
     ],
