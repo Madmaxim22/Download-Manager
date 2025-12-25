@@ -12,7 +12,7 @@ export default {
   output: {
     path: path.resolve(__dirname, "build"),
     filename: "[name].[contenthash].js",
-    assetModuleFilename: "assets/[hash][ext][query]",
+    assetModuleFilename: "assets/[name][ext]",
     clean: true,
     publicPath: "./",
   },

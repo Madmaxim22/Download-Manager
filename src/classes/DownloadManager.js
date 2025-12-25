@@ -8,7 +8,7 @@ export class DownloadManager {
   async downloadFile(fileName, fileSize) {
     try {
       // Отправляем запрос к файлу
-      const response = await fetch(`/assets/${encodeURIComponent(fileName)}`);
+      const response = await fetch(`./assets/${encodeURIComponent(fileName)}`);
 
       if (!response.ok) {
         if (response.status === 404) {
