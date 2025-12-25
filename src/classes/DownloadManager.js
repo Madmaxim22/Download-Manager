@@ -1,24 +1,50 @@
+// Импорты файлов
+import StorageStandard from "../assets/Storage Standard.pdf";
+import StreamsStandard from "../assets/Streams Standard.pdf";
+import XMLHttpRequestStandard from "../assets/XMLHttpRequest Standard.pdf";
+
 export class DownloadManager {
   constructor() {
     // Глобальная переменная для отслеживания общего объема скачанных данных
     this.totalDownloaded = 0;
+
+    // Сопоставление имен файлов с импортированными ресурсами
+    this.fileMap = {
+      "Storage Standard.pdf": StorageStandard,
+      "Streams Standard.pdf": StreamsStandard,
+      "XMLHttpRequest Standard.pdf": XMLHttpRequestStandard,
+    };
   }
 
   // Функция для скачивания файла
   async downloadFile(fileName, fileSize) {
     try {
-      // Отправляем запрос к файлу
-      const response = await fetch(`./assets/${encodeURIComponent(fileName)}`);
+      let fileUrl;
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error(`Файл не найден: ${fileName}`);
-        } else {
-          throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
+      // Проверяем, есть ли файл в карте импортированных ресурсов
+      if (this.fileMap[fileName]) {
+        fileUrl = this.fileMap[fileName];
+      } else {
+        // Если файл не найден в карте, используем fetch как резервный вариант
+        const response = await fetch(
+          `./assets/${encodeURIComponent(fileName)}`
+        );
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error(`Файл не найден: ${fileName}`);
+          } else {
+            throw new Error(
+              `Ошибка при загрузке файла: ${response.statusText}`
+            );
+          }
         }
+
+        fileUrl = response.url;
       }
 
-      // Получаем данные файла в формате ArrayBuffer
+      // Для импортированных файлов создаем Blob из URL
+      const response = await fetch(fileUrl);
       const arrayBuffer = await response.arrayBuffer();
 
       // Обновляем общий объем скачанных данных
