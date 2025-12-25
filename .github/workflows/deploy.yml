@@ -77,7 +77,7 @@ jobs:
       - name: Build project
         run: yarn build:prod
 
-      # Шаг 5: Проверка наличия папки assets после сборки
+      # Шаг 5: Проверка наличия папки assets и файлов после сборки
       - name: Check assets folder
         run: |
           if [ ! -d "./build/assets" ]; then
@@ -86,6 +86,45 @@ jobs:
           else
             echo "Папка assets успешно создана в ./build/"
             ls -la ./build/assets
+          fi
+
+          # Проверяем наличие конкретных файлов PDF
+          echo "Проверяем наличие PDF файлов..."
+          for file in ./build/assets/*.pdf; do
+            if [ -e "$file" ]; then
+              echo "Найден PDF файл: $(basename "$file")"
+            else
+              echo "PDF файлы не найдены в ./build/assets/"
+              break
+            fi
+          done
+
+          # Проверяем, что все ожидаемые файлы присутствуют
+          EXPECTED_FILES=("Storage Standard.pdf" "Streams Standard.pdf" "XMLHttpRequest Standard.pdf")
+          MISSING_FILES=()
+
+          for expected_file in "${EXPECTED_FILES[@]}"; do
+            found=false
+            for actual_file in ./build/assets/*.pdf; do
+              if [ -e "$actual_file" ]; then
+                if [[ "$(basename "$actual_file")" == "$expected_file" ]]; then
+                  found=true
+                  break
+                fi
+              fi
+            done
+            
+            if [ "$found" = false ]; then
+              MISSING_FILES+=("$expected_file")
+            fi
+          done
+
+          if [ ${#MISSING_FILES[@]} -ne 0 ]; then
+            echo "Ошибка: Отсутствуют следующие файлы в ./build/assets/:"
+            printf '%s\n' "${MISSING_FILES[@]}"
+            exit 1
+          else
+            echo "Все ожидаемые PDF файлы присутствуют в ./build/assets/"
           fi
 
       - name: Setup Pages

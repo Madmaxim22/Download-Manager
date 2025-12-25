@@ -11,7 +11,11 @@ export class DownloadManager {
       const response = await fetch(`/assets/${encodeURIComponent(fileName)}`);
 
       if (!response.ok) {
-        throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
+        if (response.status === 404) {
+          throw new Error(`Файл не найден: ${fileName}`);
+        } else {
+          throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
+        }
       }
 
       // Получаем данные файла в формате ArrayBuffer
@@ -21,13 +25,13 @@ export class DownloadManager {
       this.totalDownloaded += fileSize;
 
       // Создаем объект Blob из ArrayBuffer
-      const blob = new Blob([ arrayBuffer ], { type: 'application/pdf' });
+      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
 
       // Создаем URL для скачивания
       const downloadUrl = URL.createObjectURL(blob);
 
       // Создаем временный элемент <a> для скачивания файла
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = downloadUrl;
       link.download = fileName;
 
@@ -42,7 +46,15 @@ export class DownloadManager {
       console.log(`Файл ${fileName} успешно скачан`);
       return true;
     } catch (error) {
-      console.error('Ошибка при скачивании файла:', error);
+      console.error("Ошибка при скачивании файла:", error);
+      // Проверяем, является ли ошибка связанной с 404
+      if (error.message.includes("Файл не найден")) {
+        alert(
+          `Файл ${fileName} не найден на сервере. Пожалуйста, проверьте наличие файла в директории assets.`
+        );
+      } else {
+        alert(`Произошла ошибка при скачивании файла: ${error.message}`);
+      }
       return false;
     }
   }
